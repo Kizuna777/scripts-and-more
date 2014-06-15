@@ -1,0 +1,48 @@
+library(ExomeDepth)
+ngs1_probes <- read.delim("~/gkno_launcher/tools/CONTRA/ngs1_probes.bed", header=F)  #customized probes.bed
+
+ExomeCount <- getBamCounts(bed.frame = ngs1_probes,
+#cusotmized bam and bam.bai files
+bam.files = c("~/gkno_launcher/tools/CONTRA/cic04617.bam", "~/gkno_launcher/tools/CONTRA/cic04618.bam", "~/gkno_launcher/tools/CONTRA/cic04668.bam"),
+index.files = c("~/gkno_launcher/tools/CONTRA/cic04617.bam.bai", "~/gkno_launcher/tools/CONTRA/cic04618.bam.bai", "~/gkno_launcher/tools/CONTRA/cic04668.bam.bai"),
+include.chr = TRUE),
+
+
+
+ExomeCount.dafr <- as(ExomeCount[, colnames(ExomeCount)], 'data.frame')
+ExomeCount.dafr$chromosome <- gsub(as.character(ExomeCount.dafr$space),
+pattern = 'chr',
+replacement = '')
+print (head(ExomeCount.dafr))
+
+my.test <- ExomeCount.dafr$cic04668.bam #customized
+my.ref.samples <-  c('cic04617.bam', 'cic04618.bam') #customized
+my.reference.set <- as.matrix(ExomeCount.dafr[, my.ref.samples])
+print (head(my.reference.set))
+
+my.choice <- select.reference.set (test.counts = my.test,
+reference.counts = my.reference.set,
+bin.length = (ExomeCount.dafr$end - ExomeCount.dafr$start)/1000,
+n.bins.reduced = 10000)
+
+my.matrix <- as.matrix( ExomeCount.dafr[, my.choice$reference.choice, drop = FALSE])
+my.reference.selected <- apply(X = my.matrix,
+MAR = 1,
+FUN = sum)
+
+all.exons <- new('ExomeDepth',
+test = my.test,
+reference = my.reference.selected,
+formula = 'cbind(test, reference) ~ 1')
+
+all.exons <- CallCNVs(x = all.exons,
+transition.probability = 10^-4,
+chromosome = ExomeCount.dafr$space,
+start = ExomeCount.dafr$start,
+end = ExomeCount.dafr$end,
+name = ExomeCount.dafr$names)
+
+output.file <- 'CICxx.csv' #customized file name
+write.csv(file = output.file,
+x = all.exons@CNV.calls,
+row.names = FALSE)
