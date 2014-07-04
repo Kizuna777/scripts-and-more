@@ -5,7 +5,7 @@ ExomeCount <- getBamCounts(bed.frame = ngs1_probes,
 #cusotmized bam and bam.bai files
 bam.files = c("~/gkno_launcher/tools/CONTRA/cic04617.bam", "~/gkno_launcher/tools/CONTRA/cic04618.bam", "~/gkno_launcher/tools/CONTRA/cic04668.bam"),
 index.files = c("~/gkno_launcher/tools/CONTRA/cic04617.bam.bai", "~/gkno_launcher/tools/CONTRA/cic04618.bam.bai", "~/gkno_launcher/tools/CONTRA/cic04668.bam.bai"),
-include.chr = TRUE),
+include.chr = TRUE)
 
 ExomeCount.dafr <- as(ExomeCount[, colnames(ExomeCount)], 'data.frame')
 ExomeCount.dafr$chromosome <- gsub(as.character(ExomeCount.dafr$space),
